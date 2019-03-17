@@ -2,6 +2,8 @@ import java.sql.Connection;
 import java.sql.Statement;
 import java.util.Scanner;
 import java.sql.SQLException;
+import java.io.IOException;
+import java.sql.DriverManager;
 
 class TruckRentalDbApp{
     public static void main ( String [ ] args ) throws SQLException{
@@ -31,7 +33,7 @@ class TruckRentalDbApp{
                 System.out.println("Please type a valid input i.e. a number between 1 and 5 (inclusive)");
                 continue;
             }
-            
+
             switch(input){
                 case 1: 
                 while(true){
