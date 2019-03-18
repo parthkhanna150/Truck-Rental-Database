@@ -1,3 +1,5 @@
+import java.util.*;
+import java.sql.*;
 class simpleJDBC
 {
     public static void main ( String [ ] args ) throws SQLException
@@ -15,17 +17,21 @@ class simpleJDBC
 	}
 
 	// Register the driver.  You must register the driver before you can use it.
-        try {
-	    DriverManager.registerDriver ( new com.ibm.db2.jcc.DB2Driver() ) ;
-	} catch (Exception cnfe){
-	    System.out.println("Class not found");
-        }
-
+	try {
+		// Load the IBM Data Server Driver for JDBC and SQLJ with DriverManager
+		Class.forName("com.ibm.db2.jcc.DB2Driver");
+		// DriverManager.registerDriver (new com.ibm.db2.jcc.DB2Driver()) ;
+	} 
+	catch (ClassNotFoundException e) {
+		   e.printStackTrace();
+    }
 	// This is the url you must use for DB2.
 	//Note: This url may not valid now !
 	String url = "jdbc:db2://comp421.cs.mcgill.ca:50000/cs421";
+	String your_userid = "cs421g25";
+	String your_password = "SBGPgroup25";
 	Connection con = DriverManager.getConnection (url,your_userid,your_password) ;
-	Statement statement = con.createStatement ( ) ;
+	Statement statement = con.createStatement() ;
 
 	// Creating a table
 	try {
@@ -37,7 +43,7 @@ class simpleJDBC
             {
                 sqlCode = e.getErrorCode(); // Get SQLCODE
                 sqlState = e.getSQLState(); // Get SQLSTATE
-                
+
                 // Your code to handle errors comes here;
                 // something more meaningful than a print would be good
                 System.out.println("Code: " + sqlCode + "  sqlState: " + sqlState);
@@ -63,7 +69,7 @@ class simpleJDBC
             {
                 sqlCode = e.getErrorCode(); // Get SQLCODE
                 sqlState = e.getSQLState(); // Get SQLSTATE
-                
+
                 // Your code to handle errors comes here;
                 // something more meaningful than a print would be good
                 System.out.println("Code: " + sqlCode + "  sqlState: " + sqlState);
@@ -85,7 +91,7 @@ class simpleJDBC
 	    {
 		sqlCode = e.getErrorCode(); // Get SQLCODE
 		sqlState = e.getSQLState(); // Get SQLSTATE
-                
+
 		// Your code to handle errors comes here;
 		// something more meaningful than a print would be good
 		System.out.println("Code: " + sqlCode + "  sqlState: " + sqlState);
@@ -107,7 +113,7 @@ class simpleJDBC
 	    {
 		sqlCode = e.getErrorCode(); // Get SQLCODE
 		sqlState = e.getSQLState(); // Get SQLSTATE
-                
+
 		// Your code to handle errors comes here;
 		// something more meaningful than a print would be good
 		System.out.println("Code: " + sqlCode + "  sqlState: " + sqlState);

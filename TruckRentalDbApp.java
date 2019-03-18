@@ -10,10 +10,11 @@ class TruckRentalDbApp{
         Scanner sc = new Scanner(System.in);
         // Register the driver.  You must register the driver before you can use it.
         try {
-            DriverManager.registerDriver ( new com.ibm.db2.jcc.DB2Driver() ) ;
-        } catch (Exception cnfe){
+            DriverManager.registerDriver (new com.ibm.db2.jcc.DB2Driver()) ;
+        } 
+        catch (Exception cnfe){
             System.out.println("Class not found");
-            }
+        }
     
         // This is the url you must use for DB2.
         String url = "jdbc:db2://comp421.cs.mcgill.ca:50000/cs421";
@@ -21,10 +22,16 @@ class TruckRentalDbApp{
         String your_password = "SBGPgroup25";
         Connection con = DriverManager.getConnection (url,your_userid,your_password) ;
         Statement statement = con.createStatement ( ) ;
+
         boolean keep_running = true;
         int input = 0;
+        String deleteSQL="";
+        String insertSQL="";
+        String updateSQL="";
+        String querySQL="";
+
         while(keep_running){
-            System.out.println("You have 5 options. Click the number corresponding to the option to execute that.\nAdd a new Customer - 1\nDelete all bookings where status is cancelled and print fullnames  of the corresponding people- 2\nView size/type of the vehicle that have made a booking and requested heated seats or a drop-off at airport - 3\nIncrease capacity of the stores that have full capacity trucks - 4\nQuit - 5\n");
+            System.out.println("You have 5 options. Click the number corresponding to the option to execute that.\nAdd a new Customer - 1\nDelete all bookings where status is cancelled and print fullnames  of the corresponding people- 2\nView registration number and size/type of the vehicle which has a booking and requested heated seats or a drop-off at airport - 3\nIncrease capacity of the stores that have full capacity trucks - 4\n--------ADD ONE MORE QUERY - 5-----------\nQuit - 6\n");
         
             try{
                 input = sc.nextInt();
@@ -58,13 +65,56 @@ class TruckRentalDbApp{
                         continue;
                     }
                     long phn = Long.parseLong(phone);
-                    String insertSQL = "insert into customer values('"+lic+"','"+lname+"','"+fname+"','"+email+"','"+addr+"',"+phn+")";
+                    insertSQL = "insert into customer values('"+lic+"','"+lname+"','"+fname+"','"+email+"','"+addr+"',"+phn+")";
                     System.out.println(insertSQL);
-                    // statement.executeUpdate(querySQL) ;
+                    try{
+                        statement.executeUpdate(insertSQL) ;
+                    } 
+                    catch (SQLException e){
+                        int sqlCode = e.getErrorCode();
+                        String sqlState = e.getSQLState();
+                        // something more meaningful than a print would be good
+                        System.out.println("Code: " + sqlCode + "  sqlState: " + sqlState);
+                    }
                     break;
                 }
                 break;
-                case 5: keep_running=false; break;
+
+
+                case 2: 
+                querySQL = "select DISTINCT firstname,lastname from customer, booking where status='Cancelled' and customer.LICENCENUMBER=booking.LICENCENUMBER";
+                deleteSQL = "delete from booking where status='Cancelled'";
+                System.out.println(querySQL + "\n" + deleteSQL);
+                try{
+                    statement.executeQuery(querySQL);
+                    statement.executeUpdate(deleteSQL);
+                }
+                catch (SQLException e){
+                    int sqlCode = e.getErrorCode();
+                    String sqlState = e.getSQLState();
+                    // something more meaningful than a print would be good
+                    System.out.println("Code: " + sqlCode + "  sqlState: " + sqlState);
+                }
+                break;
+
+
+                case 3:
+                querySQL = "select truck.registration,size from truck,booking where truck.registration=booking.registration and notes='request drop off at airport' UNION select truck.registration,size from truck,booking where truck.registration=booking registration and notes='request heated seats'";
+                try{
+                    statement.executeQuery(querySQL);
+                }
+                catch (SQLException e){
+                    int sqlCode = e.getErrorCode();
+                    String sqlState = e.getSQLState();
+                    // something more meaningful than a print would be good
+                    System.out.println("Code: " + sqlCode + "  sqlState: " + sqlState);
+                }
+                break;
+
+                case 4:
+                
+                // case 5:
+                case 6: keep_running=false; break;
                 default: System.out.println("Please type a valid input i.e. a number between 1 and 5 (inclusive)"); break;
             }
         }
