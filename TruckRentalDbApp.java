@@ -12,13 +12,11 @@ class TruckRentalDbApp{
         catch (Exception cnfe){
             System.out.println("Class not found");
         }
-    
         // This is the url you must use for DB2.
         String url = "jdbc:db2://comp421.cs.mcgill.ca:50000/cs421";
         String your_userid = "cs421g25";
         String your_password = "SBGPgroup25";
         Connection con = DriverManager.getConnection (url,your_userid,your_password) ;
-        Statement statement = con.createStatement() ;
 
         boolean keep_running = true;
         int input = 0;
@@ -26,7 +24,7 @@ class TruckRentalDbApp{
         String insertSQL="";
         String updateSQL="";
         String querySQL="";
-
+        String generalQuerySQL="";
         while(keep_running){
             System.out.println("\n\n----------------------------------------------------");
             System.out.println("\nYou have 6 options. Type the number corresponding to the option to execute that.\n\n1 - Add a new Customer\n2 - Delete all bookings where status is cancelled and print fullnames  of the corresponding people\n3 - View registration number and size/type of the vehicle which has a booking and requested heated seats or a drop-off at airport\n4 - Increase capacity of the stores that have full capacity trucks\n5 - ADD ONE MORE QUERY\n6 - Quit\n");
@@ -41,8 +39,10 @@ class TruckRentalDbApp{
                 System.out.println("\nPlease type a valid input i.e. a number between 1 and 6 (inclusive)\n\n");
                 continue;
             }
+
             switch(input){
                 case 1: 
+                Statement stmt1 = con.createStatement();
                 while(true){
                     System.out.println("\nEnter the license number (8-character)");
                     String lic = sc.next();
@@ -70,17 +70,37 @@ class TruckRentalDbApp{
 
                     System.out.println("\nEnter the phone number");
                     long phn = sc.nextLong();
-                    // System.out.println(phone);
-                    // if(phone.length()!=10){
-                    //     System.out.println("\nNot a valid phone number");
-                    //     continue;
-                    // }
-                    // long phn = Long.parseLong(phone);
+
                     insertSQL = "\ninsert into customer values('"+lic+"','"+lname+"','"+fname+"','"+email+"','"+addr+"',"+phn+")";
+                    generalQuerySQL = "select * from customer";
                     System.out.println(insertSQL);
+
                     try{
-                        statement.executeUpdate(insertSQL) ;
-                    } 
+                        System.out.println("Before inserting, booking looks like:");
+                        ResultSet rs = stmt1.executeQuery(generalQuerySQL);
+                        while(rs.next()){
+                            lic= rs.getString("LICENCENUMBER");
+                            lname= rs.getString("LASTNAME");
+                            fname= rs.getString("FIRSTNAME");
+                            email= rs.getString("EMAIL");
+                            addr= rs.getString("ADDRESS");
+                            phn= rs.getLong("PHONENUMBER");
+                            System.out.println(lic + " " + lname + " " + fname + " " + email + " " + " " + addr + " " + phn);
+                        }
+                        stmt1.executeUpdate(insertSQL);
+
+                        System.out.println("\nAfter inserting, booking looks like:");
+                        rs = stmt1.executeQuery(generalQuerySQL);
+                        while(rs.next()){
+                            lic= rs.getString("LICENCENUMBER");
+                            lname= rs.getString("LASTNAME");
+                            fname= rs.getString("FIRSTNAME");
+                            email= rs.getString("EMAIL");
+                            addr= rs.getString("ADDRESS");
+                            phn= rs.getLong("PHONENUMBER");
+                            System.out.println(lic + " " + lname + " " + fname + " " + email + " " + " " + addr + " " + phn);
+                        }                        
+                    }
                     catch (SQLException e){
                         int sqlCode = e.getErrorCode();
                         String sqlState = e.getSQLState();
@@ -89,34 +109,42 @@ class TruckRentalDbApp{
                     }
                     break;
                 }
+                stmt1.close();
                 System.out.println ("DONE");
                 break;
 
 
-                case 2: 
-                querySQL = "\nselect DISTINCT firstname,lastname from customer, booking where status='Cancelled' and customer.LICENCENUMBER=booking.LICENCENUMBER";
+                case 2:
+                Statement stmt2 = con.createStatement();
+                querySQL = "select DISTINCT firstname,lastname,customer.LICENCENUMBER from customer, booking where status='Cancelled' and customer.LICENCENUMBER=booking.LICENCENUMBER";
                 deleteSQL = "delete from booking where status='Cancelled'";
+                generalQuerySQL = "select licencenumber,status from booking";
                 System.out.println(querySQL + "\n" + deleteSQL);
-                System.out.println("Before deleting:");
+                System.out.println("\nBefore deleting, the relevant booking table entries are:");
                 try{
-                    java.sql.ResultSet rs = statement.executeQuery(querySQL);
+                    ResultSet rs = stmt2.executeQuery(generalQuerySQL);
                     while(rs.next()){
-                        String registration= rs.getString("Registration");
-                        String size= rs.getString("SIZE");
-                        int id = rs.get (1) ;
-                        String name = rs.getString (2);
-                        System.out.print ("Fullname:  " + registration);
+                        String lic= rs.getString(1);
+                        String status= rs.getString(2);
+                        System.out.println("Licence number and status:  " + lic + "\t" + status);
                     }
 
-                    statement.executeUpdate(deleteSQL);
-                    
-                    System.out.println("After deleting:");
-                    java.sql.ResultSet rs = statement.executeQuery(querySQL);
+                    rs = stmt2.executeQuery(querySQL);
                     while(rs.next()){
-                        String fname= rs.getString("Registration");
-                        String lname= rs.getString("SIZE");
-                        System.out.print ("Fullname:  " + registration);
+                        String fname= rs.getString(1);
+                        String lname= rs.getString(2);
+                        String lic= rs.getString(3);
+                        System.out.println("\nFullname of person with licence no. who cancelled:  " + fname + " " + lname + ", " +lic);
                     }
+                    stmt2.executeUpdate(deleteSQL);
+                    System.out.println("\nAfter deleting, the relevant booking table entries are:");
+                    rs = stmt2.executeQuery(generalQuerySQL);
+                    while(rs.next()){
+                        String lic= rs.getString(1);
+                        String status= rs.getString(2);
+                        System.out.println("Licence number and status:  " + lic + "\t" + status);
+                    }
+                    rs.close();
                 }    
                 catch (SQLException e){
                     int sqlCode = e.getErrorCode();
@@ -124,21 +152,23 @@ class TruckRentalDbApp{
                     // something more meaningful than a print would be good
                     System.out.println("Code: " + sqlCode + "  sqlState: " + sqlState);
                 }
+                stmt2.close();
+                System.out.println("DONE");
                 break;
 
 
                 case 3:
+                Statement stmt3 = con.createStatement();
                 querySQL = "select truck.registration,size from truck,booking where truck.registration=booking.registration and notes='request drop off at airport' union select truck.registration,size from truck,booking where truck.registration=booking.registration and notes='request heated seats'";
                 try{
-                    java.sql.ResultSet rs = statement.executeQuery(querySQL);
+                    ResultSet rs = stmt3.executeQuery(querySQL);
                     while(rs.next()){
-                        String registration= rs.getString("Registration");
-                        String size= rs.getString("SIZE");
-                        int id = rs.get (1) ;
-                        String name = rs.getString (2);
-                        System.out.print ("Registration Number:  " + registration);
-                        System.out.print ("\tSize/Type:  " + size);
+                        String registration= rs.getString(1);
+                        String size= rs.getString(2);
+                        System.out.print("Registration Number:  " + registration);
+                        System.out.print("\tSize/Type:  " + size + "\n");
                     }
+                    rs.close();
                 }
                 catch (SQLException e){
                     int sqlCode = e.getErrorCode();
@@ -146,27 +176,17 @@ class TruckRentalDbApp{
                     // something more meaningful than a print would be good
                     System.out.println("Code: " + sqlCode + "  sqlState: " + sqlState);
                 }
+                stmt3.close();
                 System.out.println ("DONE");
                 break;
 
-                case 4:
+                // case 4:
                 
                 // case 5:
                 case 6: keep_running=false; break;
                 default: System.out.println("Please type a valid input i.e. a number between 1 and 5 (inclusive)"); break;
             }
         }
-            // String querySQL = "SELECT id, name from Customer WHERE NAME = \'Vicki\'";
-            // System.out.println (querySQL) ;
-            // java.sql.ResultSet rs = statement.executeQuery ( querySQL ) ;
-            // while ( rs.next ( ) ) {
-            // int id = rs.getInt ( 1 ) ;
-            // String name = rs.getString (2);
-            // System.out.println ("id:  " + id);
-            // System.out.println ("name:  " + name);
-            // }
-            // System.out.println ("DONE");
-        statement.close();
         con.close();
     }
 }
