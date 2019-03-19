@@ -9,7 +9,7 @@ where status='Cancelled' and customer.LICENCENUMBER=booking.LICENCENUMBER;
 delete from booking where status='Cancelled'
 
 --3--
-select truck.registration,size from truck,booking where truck.registration=booking.registration and notes='request drop off at airport' UNION select truck.registration,size from truck,booking where truck.registration=booking.registration and notes='request heated seats';
+select truck.registration,size from truck,booking where truck.registration=booking.registration and notes='request drop off at airport' union select truck.registration,size from truck,booking where truck.registration=booking.registration and notes='request heated seats';
 
 --4
 

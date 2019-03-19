@@ -1,0 +1,10 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - simpleJDBC",
+            "request": "launch",
+            "mainClass": "simpleJDBC"
+        }
+    ]
+}

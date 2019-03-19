@@ -19,10 +19,10 @@ class simpleJDBC
 	// Register the driver.  You must register the driver before you can use it.
 	try {
 		// Load the IBM Data Server Driver for JDBC and SQLJ with DriverManager
-		Class.forName("com.ibm.db2.jcc.DB2Driver");
-		// DriverManager.registerDriver (new com.ibm.db2.jcc.DB2Driver()) ;
+		// Class.forName("com.ibm.db2.jcc.DB2Driver");
+		DriverManager.registerDriver (new com.ibm.db2.jcc.DB2Driver()) ;
 	} 
-	catch (ClassNotFoundException e) {
+	catch (Exception e) {
 		   e.printStackTrace();
     }
 	// This is the url you must use for DB2.
